@@ -3,209 +3,285 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>INDX – Fabric client for anarchy servers</title>
-<meta name="description" content="INDX is a Fabric client for Minecraft 1.21.11 with a clean orange ClickGUI, an inventory packet menu and adjustable hitboxes. Made for servers that allow cheats.">
+<title>INDX – Cheat Client</title>
+<meta name="description" content="INDX is a cheat client for Minecraft 1.21.11 (Fabric). Made for servers that allow cheats.">
+<meta name="theme-color" content="#14141A">
 <meta property="og:title" content="INDX">
-<meta property="og:description" content="Fabric client for anarchy servers where cheats are allowed.">
+<meta property="og:description" content="A clean cheat client for Minecraft.">
 <meta property="og:image" content="banner.png">
 <link rel="icon" type="image/png" href="icon.png">
 <style>
   :root {
     --bg: #14141A;
-    --panel: #1C1C24;
+    --panel: #1B1B23;
     --line: #2C2C38;
-    --text: #D8D8E0;
-    --muted: #8D8D9A;
+    --text: #E4E4EC;
+    --muted: #9696A4;
     --orange: #FF8C1A;
-    --orange-deep: #B5600E;
+    --orange-deep: #A85A0C;
     --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 16px;
-    line-height: 1.6;
-    background-image: radial-gradient(#262630 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.6; }
   a { color: inherit; }
   :focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  #dots { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  main, footer { position: relative; z-index: 1; }
 
   /* header */
-  header .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 20px; padding-bottom: 20px; }
-  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--orange); font-weight: 700; letter-spacing: 0.08em; }
-  .brand img { width: 32px; height: 32px; image-rendering: pixelated; }
-  nav { display: flex; gap: 24px; font-size: 14px; }
-  nav a { color: var(--muted); text-decoration: none; }
-  nav a:hover { color: var(--orange); }
+  header { position: sticky; top: 0; z-index: 10; background: rgba(20, 20, 26, 0.72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--orange); font-family: var(--mono); font-weight: 700; letter-spacing: 0.08em; }
+  .brand img { width: 28px; height: 28px; image-rendering: pixelated; }
+
+  /* buttons */
+  .btn {
+    display: inline-block; padding: 12px 24px; font-family: var(--mono); font-weight: 700; font-size: 15px; text-decoration: none;
+    border: 2px solid var(--orange); color: var(--orange); background: var(--bg);
+    box-shadow: 4px 4px 0 var(--orange-deep); transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--orange-deep); }
+  .btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--orange-deep); }
+  .btn.primary { background: var(--orange); color: var(--bg); }
+  .btn.small { padding: 6px 14px; font-size: 13px; box-shadow: 3px 3px 0 var(--orange-deep); }
+  .btn.small:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--orange-deep); }
 
   /* hero */
-  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; padding-top: 72px; padding-bottom: 96px; }
-  .wordmark { display: block; width: min(100%, 420px); height: auto; color: var(--orange); }
+  .hero { padding-top: 88px; padding-bottom: 56px; }
   h1 { margin: 0 0 28px; line-height: 0; }
-  .lead { font-size: 18px; max-width: 34ch; margin: 0 0 32px; }
-  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-  .btn {
-    display: inline-block; padding: 12px 22px; font: inherit; font-weight: 700; text-decoration: none;
-    border: 2px solid var(--orange); color: var(--orange); background: transparent;
-  }
-  .btn:hover { background: rgba(255,140,26,0.12); }
-  .btn.primary { background: var(--orange); color: var(--bg); }
-  .btn.primary:hover { background: #FFA040; border-color: #FFA040; }
-  .note { margin-top: 20px; font-size: 13px; color: var(--muted); max-width: 46ch; }
+  .wordmark { display: block; width: min(80vw, 400px); height: auto; color: var(--orange); }
+  .wordmark .px { transform-box: fill-box; transform-origin: center; animation: pop 0.42s steps(4) both; animation-delay: var(--d); }
+  .wordmark .bar { transform-box: fill-box; transform-origin: left center; animation: grow 0.6s steps(10) both; animation-delay: 1.1s; }
+  .wordmark.done .px, .wordmark.done .bar { animation: none; }
+  @keyframes pop { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: scale(1); } }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .lead { margin: 0 0 32px; font-size: 24px; line-height: 1.4; font-weight: 500; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
+  .ver { font-family: var(--mono); font-size: 13px; color: var(--muted); }
 
-  /* ClickGUI mock */
-  .gui { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
-  .gui .col { display: grid; gap: 14px; }
-  .panel { background: var(--panel); border: 1px solid var(--line); }
-  .panel-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 10px; border-bottom: 2px solid var(--orange);
-    color: var(--orange); font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
-  }
-  .panel-head span.box { width: 18px; height: 18px; border: 1px solid #4A4A58; color: var(--text); text-align: center; line-height: 15px; font-size: 14px; }
-  .mods { padding: 8px; display: grid; gap: 4px; }
-  .mod {
-    width: 100%; text-align: left; font: inherit; font-size: 13px; padding: 6px 9px; cursor: pointer;
-    background: #22222C; color: #7C7C8A; border: 0; border-left: 3px solid transparent;
-    transition: background 0.12s, color 0.12s;
-  }
-  .mod:hover { background: #2A2A36; color: var(--text); }
-  .mod[aria-pressed="true"] { background: #2E2418; color: var(--orange); border-left-color: var(--orange); }
-  .settings { display: none; padding: 6px 4px 4px; font-size: 12px; color: var(--muted); }
-  .mod[aria-pressed="true"] + .settings { display: grid; gap: 8px; }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .slider { flex: 1; height: 8px; background: #2A2A34; position: relative; max-width: 90px; }
-  .slider i { position: absolute; inset: 0 auto 0 0; background: var(--orange); width: 17%; }
-  .tog { width: 28px; height: 12px; background: var(--orange); position: relative; }
-  .tog::after { content: ""; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: var(--bg); }
+  /* showcase */
+  .shot-wrap { padding-bottom: 88px; }
+  .shot { display: block; width: 100%; padding: 0; border: 1px solid var(--line); background: var(--panel); cursor: zoom-in; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45); }
+  .shot img { display: block; width: 100%; height: auto; }
 
-  /* features */
-  section { padding: 72px 0; border-top: 1px solid var(--line); }
-  h2 { margin: 0 0 36px; font-size: 24px; color: var(--orange); }
-  .features { display: grid; gap: 0; }
-  .feature { display: grid; grid-template-columns: 220px 1fr; gap: 32px; padding: 22px 0; border-bottom: 1px solid var(--line); }
-  .feature:first-child { padding-top: 0; }
-  .feature h3 { margin: 0; font-size: 16px; }
-  .feature p { margin: 0; color: var(--muted); max-width: 62ch; }
+  /* list */
+  .spec { list-style: none; margin: 0 0 88px; padding: 0; border-bottom: 1px solid var(--line); }
+  .spec li { display: grid; grid-template-columns: 240px 1fr; gap: 24px; padding: 18px 0; border-top: 1px solid var(--line); }
+  .spec b { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--orange); }
+  .spec span { color: var(--muted); }
 
-  /* download */
-  .dl p { max-width: 54ch; margin: 0 0 24px; color: var(--muted); }
-  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; font-size: 13px; color: var(--muted); }
+  /* get it */
+  .get { padding-bottom: 96px; }
+  .how { list-style: none; margin: 0 0 32px; padding: 0; counter-reset: s; font-family: var(--mono); font-size: 14px; color: var(--muted); display: grid; gap: 6px; }
+  .how li { counter-increment: s; }
+  .how li::before { content: counter(s) "  "; color: var(--orange); font-weight: 700; }
 
-  @media (max-width: 820px) {
-    .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; padding-bottom: 64px; }
-    .feature { grid-template-columns: 1fr; gap: 6px; }
+  footer { border-top: 1px solid var(--line); padding: 24px 0 40px; font-size: 13px; color: var(--muted); background: rgba(20, 20, 26, 0.85); }
+
+  /* image viewer */
+  dialog { padding: 0; border: 0; background: transparent; max-width: 96vw; max-height: 96vh; overflow: visible; }
+  dialog::backdrop { background: rgba(8, 8, 12, 0.9); }
+  dialog img { display: block; max-width: 96vw; max-height: 94vh; width: auto; height: auto; cursor: zoom-out; }
+
+  @media (max-width: 760px) {
+    .hero { padding-top: 56px; padding-bottom: 40px; }
+    .lead { font-size: 21px; }
+    .spec li { grid-template-columns: 1fr; gap: 2px; }
+    .shot-wrap, .spec { margin-bottom: 0; padding-bottom: 56px; }
+    .spec { margin-bottom: 56px; padding-bottom: 0; }
   }
-  @media (max-width: 420px) { .gui { grid-template-columns: 1fr; } }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .mod { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .btn { transition: none; }
+    .wordmark .px, .wordmark .bar { animation: none; }
+  }
 </style>
 </head>
 <body>
 
+<canvas id="dots" aria-hidden="true"></canvas>
+
 <header>
   <div class="wrap">
     <a class="brand" href="#top"><img src="icon.png" alt="">INDX</a>
-    <nav aria-label="Main">
-      <a href="#features">Features</a>
-      <a href="#download">Download</a>
-    </nav>
+    <a class="btn small" href="#get" data-dl>Download</a>
   </div>
 </header>
 
 <main id="top">
   <div class="wrap hero">
-    <div>
-      <h1><svg class="wordmark" viewBox="0 0 23 7" role="img" aria-label="INDX" shape-rendering="crispEdges" fill="currentColor"><rect x="0" y="0" width="1" height="1"/><rect x="1" y="0" width="1" height="1"/><rect x="2" y="0" width="1" height="1"/><rect x="3" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="2" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="10" y="0" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="12" y="0" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="16" y="2" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="15" y="4" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="19" y="1" width="1" height="1"/><rect x="21" y="1" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="19" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/><rect x="0" y="6" width="23" height="1"/></svg></h1>
-      <p class="lead">A Fabric client for anarchy servers where cheats are allowed.</p>
-      <div class="actions">
-        <a class="btn primary" href="#download">Download</a>
-        <a class="btn" href="#features">See features</a>
-      </div>
-      <p class="note">Minecraft 1.21.11 · Fabric · client-side only</p>
-    </div>
-
-    <!-- Small clickable replica of the ClickGUI: click a module to toggle it -->
-    <div class="gui" aria-label="ClickGUI preview">
-      <div class="col">
-        <div class="panel">
-          <div class="panel-head">COMBAT <span class="box">–</span></div>
-          <div class="mods">
-            <button class="mod" aria-pressed="true">Hitboxes</button>
-            <div class="settings">
-              <div class="row">Expand <span class="slider"><i></i></span> 0.5</div>
-              <div class="row">Show Boxes <span class="tog"></span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="panel">
-          <div class="panel-head">RENDER <span class="box">–</span></div>
-          <div class="mods">
-            <button class="mod" aria-pressed="true">Fullbright</button>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">MOVEMENT <span class="box">–</span></div>
-          <div class="mods">
-            <button class="mod" aria-pressed="false">Sprint</button>
-          </div>
-        </div>
-      </div>
+    <h1><svg class="wordmark" viewBox="0 0 23 7" role="img" aria-label="INDX" shape-rendering="crispEdges" fill="currentColor"><rect class="px" style="--d:0ms" x="0" y="0" width="1" height="1"/><rect class="px" style="--d:34ms" x="1" y="0" width="1" height="1"/><rect class="px" style="--d:68ms" x="2" y="0" width="1" height="1"/><rect class="px" style="--d:102ms" x="3" y="0" width="1" height="1"/><rect class="px" style="--d:136ms" x="4" y="0" width="1" height="1"/><rect class="px" style="--d:84ms" x="2" y="1" width="1" height="1"/><rect class="px" style="--d:100ms" x="2" y="2" width="1" height="1"/><rect class="px" style="--d:116ms" x="2" y="3" width="1" height="1"/><rect class="px" style="--d:64ms" x="0" y="4" width="1" height="1"/><rect class="px" style="--d:98ms" x="1" y="4" width="1" height="1"/><rect class="px" style="--d:132ms" x="2" y="4" width="1" height="1"/><rect class="px" style="--d:166ms" x="3" y="4" width="1" height="1"/><rect class="px" style="--d:200ms" x="4" y="4" width="1" height="1"/><rect class="px" style="--d:204ms" x="6" y="0" width="1" height="1"/><rect class="px" style="--d:340ms" x="10" y="0" width="1" height="1"/><rect class="px" style="--d:220ms" x="6" y="1" width="1" height="1"/><rect class="px" style="--d:254ms" x="7" y="1" width="1" height="1"/><rect class="px" style="--d:356ms" x="10" y="1" width="1" height="1"/><rect class="px" style="--d:236ms" x="6" y="2" width="1" height="1"/><rect class="px" style="--d:304ms" x="8" y="2" width="1" height="1"/><rect class="px" style="--d:372ms" x="10" y="2" width="1" height="1"/><rect class="px" style="--d:252ms" x="6" y="3" width="1" height="1"/><rect class="px" style="--d:354ms" x="9" y="3" width="1" height="1"/><rect class="px" style="--d:388ms" x="10" y="3" width="1" height="1"/><rect class="px" style="--d:268ms" x="6" y="4" width="1" height="1"/><rect class="px" style="--d:404ms" x="10" y="4" width="1" height="1"/><rect class="px" style="--d:408ms" x="12" y="0" width="1" height="1"/><rect class="px" style="--d:442ms" x="13" y="0" width="1" height="1"/><rect class="px" style="--d:476ms" x="14" y="0" width="1" height="1"/><rect class="px" style="--d:510ms" x="15" y="0" width="1" height="1"/><rect class="px" style="--d:424ms" x="12" y="1" width="1" height="1"/><rect class="px" style="--d:560ms" x="16" y="1" width="1" height="1"/><rect class="px" style="--d:440ms" x="12" y="2" width="1" height="1"/><rect class="px" style="--d:576ms" x="16" y="2" width="1" height="1"/><rect class="px" style="--d:456ms" x="12" y="3" width="1" height="1"/><rect class="px" style="--d:592ms" x="16" y="3" width="1" height="1"/><rect class="px" style="--d:472ms" x="12" y="4" width="1" height="1"/><rect class="px" style="--d:506ms" x="13" y="4" width="1" height="1"/><rect class="px" style="--d:540ms" x="14" y="4" width="1" height="1"/><rect class="px" style="--d:574ms" x="15" y="4" width="1" height="1"/><rect class="px" style="--d:612ms" x="18" y="0" width="1" height="1"/><rect class="px" style="--d:748ms" x="22" y="0" width="1" height="1"/><rect class="px" style="--d:662ms" x="19" y="1" width="1" height="1"/><rect class="px" style="--d:730ms" x="21" y="1" width="1" height="1"/><rect class="px" style="--d:712ms" x="20" y="2" width="1" height="1"/><rect class="px" style="--d:694ms" x="19" y="3" width="1" height="1"/><rect class="px" style="--d:762ms" x="21" y="3" width="1" height="1"/><rect class="px" style="--d:676ms" x="18" y="4" width="1" height="1"/><rect class="px" style="--d:812ms" x="22" y="4" width="1" height="1"/><rect class="bar" x="0" y="6" width="23" height="1"/></svg></h1>
+    <p class="lead">A clean cheat client for Minecraft.</p>
+    <div class="actions">
+      <a class="btn primary" href="#get" data-dl>Download</a>
+      <span class="ver">1.21.11 · Fabric</span>
     </div>
   </div>
 
-  <section id="features">
-    <div class="wrap">
-      <h2>What it does</h2>
-      <div class="features">
-        <div class="feature">
-          <h3>Clean ClickGUI</h3>
-          <p>One panel per category, small flat module buttons, sliders and keybinds. Drag panels where you want them, your layout is saved.</p>
-        </div>
-        <div class="feature">
-          <h3>Inventory menu</h3>
-          <p>Open your inventory and get a compact menu next to it: delay and send packets, view the queue, log traffic and run macros.</p>
-        </div>
-        <div class="feature">
-          <h3>Adjustable hitboxes</h3>
-          <p>Make other players' hitboxes bigger in every direction, so you can hit them without aiming exactly. You set how much extra reach you want.</p>
-        </div>
-        <div class="feature">
-          <h3>Server-friendly mode</h3>
-          <p>Switch between a safe mode that stays inside the vanilla and Paper movement limits, and an unrestricted mode for servers with no rules.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  <div class="wrap shot-wrap">
+    <button class="shot" type="button" id="shot" aria-label="View the screenshot larger">
+      <img src="showcase.png" width="1912" height="963" alt="The INDX ClickGUI with panels for Combat, Movement, Render, Misc, Player and World">
+    </button>
+  </div>
 
-  <section id="download" class="dl">
-    <div class="wrap">
-      <h2>Download</h2>
-      <p>You need Fabric Loader and Fabric API for Minecraft 1.21.11. Put the INDX .jar into your mods folder and start the game. Open the ClickGUI with Right Shift.</p>
-      <!-- TODO: replace href="#" with your Modrinth or GitHub release link -->
-      <a class="btn primary" href="#">Download INDX</a>
-    </div>
-  </section>
+  <div class="wrap">
+    <ul class="spec">
+      <li><b>60+ modules</b><span>Combat, movement, render, player, world.</span></li>
+      <li><b>Attribute Swap</b><span>Switches weapons in the middle of a hit.</span></li>
+      <li><b>Inventory menu</b><span>Delay, send and flush packets.</span></li>
+      <li><b>Hitboxes</b><span>Make them bigger. You pick how much.</span></li>
+      <li><b>Paper-safe mode</b><span>Stays inside vanilla and Paper limits.</span></li>
+    </ul>
+  </div>
+
+  <div class="wrap get" id="get">
+    <ol class="how">
+      <li>Install Fabric Loader and Fabric API for 1.21.11</li>
+      <li>Put the .jar in your mods folder</li>
+      <li>Press Right Ctrl in game</li>
+    </ol>
+    <a class="btn primary" href="#get" data-dl>Download INDX</a>
+  </div>
 </main>
 
 <footer>
-  <div class="wrap">INDX is made for servers that allow cheats. Using it elsewhere can get you banned. Not affiliated with Mojang or Microsoft.</div>
+  <div class="wrap">For servers that allow cheats. Not affiliated with Mojang or Microsoft.</div>
 </footer>
 
+<dialog id="viewer" aria-label="Screenshot">
+  <img src="showcase.png" alt="The INDX ClickGUI, full size">
+</dialog>
+
 <script>
-  // Toggle the preview modules on click
-  document.querySelectorAll('.gui .mod').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      btn.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+(function () {
+  /* ---------- DOWNLOAD SETTINGS: change these two lines ---------- */
+  var REPO = 'YOUR-USERNAME/YOUR-REPO';   // your GitHub user and the repo that has the release, e.g. 'maxmuster/indx'
+  var FILE = 'INDX.jar';                  // the exact file name you attach to the release
+  /* ----------------------------------------------------------------- */
+  if (REPO.indexOf('YOUR-') !== 0) {
+    var url = 'https://github.com/' + REPO + '/releases/latest/download/' + FILE;
+    document.querySelectorAll('[data-dl]').forEach(function (a) {
+      a.href = url;
+      a.setAttribute('download', FILE);
     });
+  }
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- dot field: bends away from the cursor, click sends a ripple ---------- */
+  var canvas = document.getElementById('dots');
+  var ctx = canvas.getContext('2d');
+  var GAP = 30, RADIUS = 200, PUSH = 32, WAVE_W = 80, WAVE_SPEED = 0.6, WAVE_LIFE = 1500;
+  var w = 0, h = 0, dpr = 1;
+  var mx = -9999, my = -9999, tx = -9999, ty = -9999, inf = 0, infT = 0, raf = 0;
+  var waves = [];
+
+  function draw(now) {
+    ctx.clearRect(0, 0, w, h);
+    if (inf > 0.01) {
+      var g = ctx.createRadialGradient(mx, my, 0, mx, my, 260);
+      g.addColorStop(0, 'rgba(255,140,26,' + (0.11 * inf) + ')');
+      g.addColorStop(1, 'rgba(255,140,26,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(mx - 260, my - 260, 520, 520);
+    }
+    for (var gy = GAP / 2; gy < h + GAP; gy += GAP) {
+      for (var gx = GAP / 2; gx < w + GAP; gx += GAP) {
+        var x = gx, y = gy, f = 0;
+        if (inf > 0.01) {
+          var dx = gx - mx, dy = gy - my;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          if (d < RADIUS) {
+            var t = 1 - d / RADIUS;
+            f = t * t * inf;
+            if (d > 0.001) { x += (dx / d) * f * PUSH; y += (dy / d) * f * PUSH; }
+          }
+        }
+        for (var i = 0; i < waves.length; i++) {
+          var wv = waves[i];
+          var age = now - wv.t;
+          var wx = gx - wv.x, wy = gy - wv.y;
+          var wd = Math.sqrt(wx * wx + wy * wy);
+          var diff = Math.abs(wd - age * WAVE_SPEED);
+          if (diff < WAVE_W && wd > 0.001) {
+            var amp = (1 - diff / WAVE_W) * Math.max(0, 1 - age / WAVE_LIFE);
+            x += (wx / wd) * amp * 20;
+            y += (wy / wd) * amp * 20;
+            if (amp * 0.9 > f) f = amp * 0.9;
+          }
+        }
+        var r = 1.2 + f * 1.8;
+        var k = Math.min(1, f * 1.3);
+        ctx.fillStyle = 'rgb(' + Math.round(64 + 191 * k) + ',' + Math.round(64 + 76 * k) + ',' + Math.round(80 - 54 * k) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, 6.2832);
+        ctx.fill();
+      }
+    }
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw(performance.now());
+  }
+
+  function tick(now) {
+    mx += (tx - mx) * 0.18;
+    my += (ty - my) * 0.18;
+    inf += (infT - inf) * 0.12;
+    waves = waves.filter(function (v) { return now - v.t < WAVE_LIFE; });
+    draw(now);
+    if (waves.length || Math.abs(tx - mx) > 0.3 || Math.abs(ty - my) > 0.3 || Math.abs(infT - inf) > 0.005) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      raf = 0;
+      if (infT === 0) { inf = 0; draw(now); }
+    }
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(tick); }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  if (!reduce) {
+    window.addEventListener('pointermove', function (e) {
+      if (mx < -9000) { mx = e.clientX; my = e.clientY; }
+      tx = e.clientX; ty = e.clientY; infT = 1; kick();
+    }, { passive: true });
+    window.addEventListener('pointerdown', function (e) {
+      if (waves.length > 3) waves.shift();
+      waves.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+      kick();
+    });
+    window.addEventListener('pointerup', function (e) {
+      if (e.pointerType !== 'mouse') { infT = 0; kick(); }
+    });
+    document.documentElement.addEventListener('mouseleave', function () { infT = 0; kick(); });
+    window.addEventListener('blur', function () { infT = 0; kick(); });
+  }
+
+  // After the logo has assembled, drop the animation so it is repainted in its final state
+  setTimeout(function () {
+    var wm = document.querySelector('.wordmark');
+    if (wm) wm.classList.add('done');
+  }, 1800);
+
+  /* ---------- screenshot viewer ---------- */
+  var viewer = document.getElementById('viewer');
+  document.getElementById('shot').addEventListener('click', function () {
+    if (viewer.showModal) viewer.showModal();
   });
+  viewer.addEventListener('click', function () { viewer.close(); });
+})();
 </script>
 </body>
 </html>
